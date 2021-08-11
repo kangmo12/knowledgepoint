@@ -95,7 +95,7 @@ const createSDPOffer = async id => {
 
 
 //send sdp answer
-// ?
+// 
 const createSDPAnswer = async data => {
     let displayId = data.displayId;
 
@@ -189,6 +189,7 @@ SDPBtn.addEventListener('click', async () => {
 
 
 /********************** event receive **********************/
+// 위에서 받은 데이터값을 처리하는 부분
 clientIo.on("knowledgetalk", async data => {
 
     socketLog('receive', data);
