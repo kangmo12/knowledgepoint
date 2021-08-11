@@ -219,7 +219,7 @@ clientIo.on("knowledgetalk", async data => {
            타입은 2가지 경우가있는데 offer , answer 
         */
         case 'SDP':
-            if(data.useMediaSvr == 'Y'){
+            if(data.useMediaSvr == 'N'){
                 if(data.sdp && data.sdp.type == 'offer'){
                     createSDPAnswer(data);
                 }
@@ -262,9 +262,9 @@ const roomJoin = data => {
 const startSession = async data => {
     members = Object.keys(data.members);
 
-    //3명 이상일 때, 다자간 통화 연결 시작 --> 2명일때 방이 생성 되면됨
+  
  
-    if(data.useMediaSvr == 'Y'){
+    if(data.useMediaSvr == 'N'){
         for(let i=0; i<members.length; ++i){ 
             let user = document.getElementById(members[i]);
             if(!user){
