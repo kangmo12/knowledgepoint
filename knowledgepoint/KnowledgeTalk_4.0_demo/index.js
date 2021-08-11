@@ -1,6 +1,8 @@
-//socket 연결
+//socket session 연결
 const clientIo = io.connect("https://dev.knowledgetalk.co.kr:7100/SignalServer",{});
 
+
+//해당태그에 접근하기 위해서 각 btn에 id 값을 넣는다. 
 const roomIdInput = document.getElementById("roomIdInput");
 const videoBox = document.getElementById("videoBox");
 const printBox = document.getElementById("printBox")
@@ -22,7 +24,7 @@ let streams = {};
 
 /********************** 기타 method **********************/
 
-//print log on page
+//로그출력
 const socketLog = (type, contents) => {
     let jsonContents = JSON.stringify(contents);
     const textLine = document.createElement("p");
@@ -39,27 +41,8 @@ const sendData = data => {
     clientIo.emit("knowledgetalk", data);
 }
 
-const deletePeers = async () => {
-    for(let key in streams) {
-        if (streams[key] && streams[key].getTracks()) {
-            streams[key].getTracks().forEach(track => {
-                track.stop();
-            })
 
-            document.getElementById(key).srcObject = null;
-            document.getElementById(key).remove();
-        }
-    }
-
-    for(let key in peers) {
-        if (peers[key]) {
-            peers[key].close();
-            peers[key] = null;
-        }
-    }
-}
-
-//영상 출력 화면 Box 생성
+//영상 출력 화면 Box 생성하는 부분
 const createVideoBox = id => {
     let videoContainner = document.createElement("div");
     videoContainner.classList = "multi-video";
@@ -79,18 +62,28 @@ const createVideoBox = id => {
     videoBox.appendChild(videoContainner);
 }
 
+  
+
 //Local stream, peer 생성 및 sdp return
+/* RTCPeerConnection : local 과 원격 peer 간의 webRTC연결을 담당하며 원격피어에 연결하기
+                       위한 method 제공.(연결을 유지하고 , 연결상태 모니터링 통해서 연결이 필요하지 않으면 종료)
+   */
 const createSDPOffer = async id => {
     return new Promise(async (resolve, reject) => {
         peers[id] = new RTCPeerConnection();
+        //await 사용해 비동기방식으로 비디오 , 오디오 요청
         streams[id] = await navigator.mediaDevices.getUserMedia({video: true, audio: true});
         let str = 'multiVideo-'+id;
         let multiVideo = document.getElementById(str);
-        multiVideo.srcObject = streams[id];
+        // strams 안에 담긴것을 가져오고 담긴것을 getTracks 사용해서 트랙을 가져온다.
+        multiVideo.srcObject = streams[id]; 
         streams[id].getTracks().forEach(track => {
             peers[id].addTrack(track, streams[id]);
         });
 
+
+        /* sdp : session 프로토콜에 일종  */
+        //수신자에게 전달할 sdp생성하는 부분
         peers[id].createOffer().then(sdp => {
             peers[id].setLocalDescription(sdp);
             return sdp;
@@ -100,9 +93,12 @@ const createSDPOffer = async id => {
     })
 }
 
+
 //send sdp answer
+// 이해x 
 const createSDPAnswer = async data => {
     let displayId = data.displayId;
+
 
     peers[displayId] = new RTCPeerConnection();
     peers[displayId].ontrack = e => {
@@ -131,7 +127,7 @@ const createSDPAnswer = async data => {
     }
 }
 
-//퇴장 시, stream,peer 제거
+//퇴장 시, stream,peer 제거하는 메서드
 const leaveParticipant = id => {
     document.getElementById(`multiVideo-${id}`).remove();
     document.getElementById(id).remove();
@@ -151,7 +147,10 @@ const leaveParticipant = id => {
 
 }
 
+
+
 /********************** button event **********************/
+// create , Roomjoin 버튼 누르면 이벤트 발생
 CreateRoomBtn.addEventListener('click', () => {
     host = true;
     let data = {
@@ -169,7 +168,7 @@ RoomJoinBtn.addEventListener('click', () => {
 
     sendData(data);
 });
-
+// SDP 라는 버튼을 클릭시 이벤트발생하는 data에 객체를 담아서 서버로 보낸다.
 SDPBtn.addEventListener('click', async () => {
 
     let sdp = await createSDPOffer(userId);
@@ -195,13 +194,14 @@ clientIo.on("knowledgetalk", async data => {
     socketLog('receive', data);
 
     switch(data.eventOp || data.signalOp) {
+        //data.code 값이 200 이면 방생성
         case 'CreateRoom':
             if(data.code == '200'){
                 createRoom(data);
                 CreateRoomBtn.disabled = true;
             }
             break;
-
+            
         case 'RoomJoin':
             if(data.code == '200'){
                 roomJoin(data);
@@ -214,6 +214,9 @@ clientIo.on("knowledgetalk", async data => {
             startSession(data);
             break;
 
+        /*서버에서 data 객체를 받은것을 처리하는데 data.useMediaSvr == Y 일경우 영상회의 시작
+           타입은 2가지 경우가있는데 offer , answer 
+        */
         case 'SDP':
             if(data.useMediaSvr == 'Y'){
                 if(data.sdp && data.sdp.type == 'offer'){
@@ -238,6 +241,7 @@ clientIo.on("knowledgetalk", async data => {
 
 });
 
+// 
 
 const createRoom = data => {
     roomIdInput.value = data.roomId;
@@ -257,15 +261,16 @@ const roomJoin = data => {
 const startSession = async data => {
     members = Object.keys(data.members);
 
-    //3명 이상일 때, 다자간 통화 연결 시작
+    //3명 이상일 때, 다자간 통화 연결 시작 --> 2명일때 방이 생성 되면됨
+ 
     if(data.useMediaSvr == 'Y'){
-        for(let i=0; i<members.length; ++i){
+        for(let i=0; i<members.length; ++i){ 
             let user = document.getElementById(members[i]);
             if(!user){
                 createVideoBox(members[i]);
             }
         }
-
+    
         SDPBtn.disabled = false;
         host = data.host;
     }
