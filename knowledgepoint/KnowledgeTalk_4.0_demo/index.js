@@ -95,7 +95,7 @@ const createSDPOffer = async id => {
 
 
 //send sdp answer
-// 이해x 
+// ?
 const createSDPAnswer = async data => {
     let displayId = data.displayId;
 
