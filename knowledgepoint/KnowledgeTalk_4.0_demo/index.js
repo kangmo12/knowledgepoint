@@ -82,7 +82,9 @@ const createSDPOffer = async id => {
         });
 
 
-        /* sdp : session 프로토콜에 일종  */
+        /* sdp : session 프로토콜에 일종 
+                 offer/answer 을 통해서 동작한다.
+        */
         //수신자에게 전달할 sdp생성하는 부분
         peers[id].createOffer().then(sdp => {
             peers[id].setLocalDescription(sdp);
