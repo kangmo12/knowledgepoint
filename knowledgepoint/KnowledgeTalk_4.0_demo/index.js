@@ -218,7 +218,8 @@ clientIo.on("knowledgetalk", async data => {
             break;
 
         /*서버에서 data 객체를 받은것을 처리하는데 data.useMediaSvr == Y 일경우 영상회의 시작
-           타입은 2가지 경우가있는데 offer , answer 
+           sdp타입은 2가지 경우가있는데 offer , answer 
+           sdp offer를 서버에게 보내면 answer를 응답받으면 연결이된다.
         */
         case 'SDP':
             if(data.useMediaSvr == 'N'){
