@@ -2,15 +2,15 @@
 
 ---2명 영상 통화
 
-*client1 create버튼 클릭시 서버에게 방을 요청하고, code값이 200이라면 방이 생성되면서 서버에서 client에게 
+*방장이 create버튼 클릭시 서버에게 방을 요청하고, code값이 200이라면 방이 생성되고 서버에서 client에게 
 0-99999사이의 방id를 알려준다.
 
 *client가 roomjoin 버튼을 클릭하면 서버에서 userid랑 부여한다.
 
-*client2 가 입장할 방의 번호를 입력하고 Roomjoin버튼을 누르면 
-  서버에서 client에게 userid값을 준다.
+*client 입장할 방의 번호를 입력하고 Roomjoin버튼을 누르면 
+  서버에서 방장에게 userid값을 준다.
 
-*useMediaSvr값이 N 이라서 2명이 ROOM에 들어오게 되면 connection을생성하고
+*useMediaSvr값이 N 이면 2명이 ROOM에 들어오게 되면 connection을생성하고
 
 *sdp버튼을 누르면 방장이 서버에게 SDP offer을 전달하고 서버는 client에게 SDP offer을 전달하고
  client는 SDP Answer을 서버에게 전달하고 서버는 다시 방장에게 전달하여 방장과client가 연결된다.
